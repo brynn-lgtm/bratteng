@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bratteng</title>
+<meta name="description" content="Bratteng: receipts, jobs, visits and stays for the family house · kvitteringer, jobber, besøk og opphold">
+<meta name="theme-color" content="#1F3A5F">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bratteng">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#F6F4EF;--paper:#FFFFFF;--ink:#1B2430;--muted:#5A6573;--line:#DCD8CE;--navy:#1F3A5F;--navy-ink:#FFFFFF;
+  --falu:#9E2B25;--moss:#3E6B4A;--amber:#8A5A00;--amber-bg:#FFF3D6;--birch:#ECE7DC;--focus:#2F6FB5;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#12171E;--paper:#1A212B;--ink:#ECE8E0;--muted:#A3ACB8;--line:#2E3845;
+  --navy:#3B6796;--falu:#E07A70;--moss:#86BD95;--amber:#F2C14E;--amber-bg:#3A2F14;--birch:#222B36;--focus:#8FB2DE}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:20px/1.35 var(--sans);
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#app{max-width:560px;margin:0 auto;padding:12px 16px 40px;min-height:100vh}
+.l2{display:block;font-size:.78em;color:var(--muted);font-weight:400}
+button .l2,.btn .l2{color:inherit;opacity:.82}
+h1{font-size:26px;margin:6px 0 2px;line-height:1.2}
+h2{font-size:22px;margin:18px 0 8px;line-height:1.25}
+.top{display:flex;align-items:center;gap:12px;padding:6px 0 10px}
+.top img{width:44px;height:44px;border-radius:10px}
+.top .who{flex:1}
+.top .who b{font-size:22px}
+a,.link{color:var(--focus);background:none;border:0;font:inherit;font-size:17px;padding:8px 0;text-decoration:underline;cursor:pointer}
+button{font:inherit;cursor:pointer}
+.btn{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;border:0;border-radius:18px;padding:14px 18px;
+  background:var(--navy);color:var(--navy-ink);text-align:left;font-size:23px;font-weight:700;margin:0 0 12px;
+  box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.btn .ico{font-size:34px;line-height:1;flex:none;width:42px;text-align:center}
+.btn.big{min-height:104px;font-size:26px}
+.btn.big .ico{font-size:44px;width:52px}
+.btn.falu{background:var(--falu)}
+.btn.moss{background:var(--moss)}
+.btn.light{background:var(--paper);color:var(--ink);border:2px solid var(--line)}
+.btn.light .l2{color:var(--muted)}
+.btn[disabled]{opacity:.45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid .btn{flex-direction:column;align-items:flex-start;min-height:132px;margin:0;font-size:21px}
+.views{display:grid;gap:10px;margin-top:22px}
+.view{display:flex;justify-content:space-between;align-items:center;background:var(--paper);border:2px solid var(--line);
+  border-radius:16px;padding:14px 16px;font-size:20px;font-weight:700;color:var(--ink);text-align:left;width:100%;min-height:68px}
+.view .n{background:var(--birch);border-radius:99px;padding:2px 12px;font-size:18px}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--muted);font-size:17px;flex:none;max-width:45%}
+.row .v{font-weight:700;text-align:right;word-break:break-word}
+.amount{font-size:34px;font-weight:800;letter-spacing:-.5px}
+.say{font-size:19px;background:var(--birch);border-radius:14px;padding:12px 14px;margin:10px 0}
+.ask{background:var(--amber-bg);color:var(--ink);border-left:6px solid var(--amber);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:19px}
+.warn{background:var(--amber-bg);border-radius:14px;padding:14px;margin:10px 0;font-size:19px}
+.bad{color:var(--falu);font-weight:700;font-size:18px;margin:6px 0}
+label{display:block;font-size:17px;color:var(--muted);margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;font-size:21px;padding:12px;border:2px solid var(--line);border-radius:12px;
+  background:var(--paper);color:var(--ink)}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+textarea{min-height:96px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.two>div{min-width:0}
+input[type=date]{min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;min-height:52px}
+.thumb{width:100%;max-height:260px;object-fit:contain;border-radius:14px;background:var(--birch);margin:6px 0}
+.list .item{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.item .t{font-weight:700}
+.item .m{color:var(--muted);font-size:17px}
+.pick{display:block;width:100%;text-align:left;background:var(--paper);border:2px solid var(--line);border-radius:16px;
+  padding:14px;margin:10px 0;color:var(--ink);font-size:20px;min-height:68px}
+.pick b{font-size:22px}
+.center{text-align:center}
+.spin{width:64px;height:64px;border-radius:50%;border:7px solid var(--line);border-top-color:var(--navy);margin:40px auto 18px;
+  animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.rec{width:150px;height:150px;border-radius:50%;background:var(--falu);margin:30px auto 14px;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:38px;font-weight:800;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(158,43,37,.15)}}
+.ok{font-size:72px;text-align:center;margin:28px 0 0;color:var(--moss)}
+.pos{color:var(--moss)}.neg{color:var(--falu)}
+.foot{color:var(--muted);font-size:15px;margin-top:26px;text-align:center}
+.hide{display:none}
+@media (prefers-reduced-motion:reduce){.spin,.rec{animation:none}}
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite"></div>
+<input id="cam" class="hide" type="file" accept="image/*" capture="environment">
+<input id="pick" class="hide" type="file" accept="image/*">
+<input id="cam2" class="hide" type="file" accept="image/*" capture="environment">
+<script src="config.js"></script>
+<script>
+'use strict';
+// Bratteng phone app. Talks to the Genie (Google Apps Script web app) at BRATTENG_API (config.js).
+// No names, emails or keys live in this file: they come from the Genie after the family code is checked.
+const API = window.BRATTENG_API || '';
+const VERSION = '2026-11-18 v03';
+const S = { code: '', person: '', lang: 'en', lists: null, listsAt: 0, kind: '', files: [], thumbs: [], text: '',
+  proposal: null, original: '', manual: false, reason: '', edit: false, sid: '', err: '', back: 'home', jobNo: null };
+const $ = (id) => document.getElementById(id);
+const app = $('app');
+
+// ---------- storage that never breaks the page
+const store = {
+  get(k) { try { return localStorage.getItem('bratteng.' + k) || ''; } catch (e) { return ''; } },
+  set(k, v) { try { if (v) localStorage.setItem('bratteng.' + k, v); else localStorage.removeItem('bratteng.' + k); } catch (e) {} },
+};
+
+// ---------- words: both languages on every screen, the person's own first
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function L(en, no) { const a = S.lang === 'no' ? no : en, b = S.lang === 'no' ? en : no;
+  return '<span class="l1">' + a + '</span><span class="l2">' + b + '</span>'; }
+function P(en, no) { return S.lang === 'no' ? no + ' · ' + en : en + ' · ' + no; }    // one line (placeholders, options)
+const jw = (no) => (S.lang === 'no' ? 'Jobb ' : 'Job ') + no;
+const half = (s, i) => { const p = String(s || '').split(' · '); return p.length > 1 ? p[i] : String(s || ''); };
+function kr(n, whole) {
+  if (n == null || n === '' || isNaN(Number(n))) return '–';
+  const v = Number(n), neg = v < 0, a = Math.abs(v);
+  const [i, d] = (whole ? Math.round(a).toString() : a.toFixed(2)).split('.');
+  return (neg ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d ? ',' + d : '') + ' kr';
+}
+const rng = (a, b) => ddmm(a) + (b && b !== a ? ' – ' + ddmm(b) : '');
+const stayList = () => (S.lists && S.lists.stays) || [];
+function ddmm(iso) { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '.' + m[2] + '.' + m[1] : String(iso || ''); }
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const num = (v) => (v === '' || v == null ? NaN : Number(String(v).replace(/[\s ]/g, '').replace(/kr/i, '').replace(',', '.')));
+const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+// ---------- talking to the Genie
+async function call(req, timeoutMs) {
+  if (!API) return { ok: false, error: 'no_api' };
+  const ctl = window.AbortController ? new AbortController() : null;
+  const t = setTimeout(() => ctl && ctl.abort(), timeoutMs || 90000);
+  let r;
+  try {
+    r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow',
+      body: JSON.stringify(Object.assign({ code: S.code, person: S.person }, req)), signal: ctl ? ctl.signal : undefined });
+  } catch (e) { clearTimeout(t); return { ok: false, error: 'network' }; }
+  clearTimeout(t);
+  try { return await r.json(); } catch (e) { return { ok: false, error: 'server' }; }
+}
+function syncUrl() {
+  const q = '?k=' + encodeURIComponent(S.code) + (S.person ? '&p=' + encodeURIComponent(S.person) : '');
+  try { history.replaceState(null, '', location.pathname + q); } catch (e) {}
+}
+
+// ---------- start
+async function boot() {
+  const u = new URLSearchParams(location.search);
+  S.code = (u.get('k') || store.get('code')).trim();
+  S.person = (u.get('p') || store.get('person')).trim();
+  if (!S.code) return badLink('nocode');
+  store.set('code', S.code);
+  try { const c = JSON.parse(store.get('lists') || 'null'); if (c && c.code === S.code) { S.lists = c.lists; S.listsAt = c.at; } } catch (e) {}
+  if (S.lists) afterLists(); else spinner(L('Opening Bratteng…', 'Åpner Bratteng…'));
+  await refresh(!S.lists);
+}
+async function refresh(blocking) {
+  const res = await call({ action: 'lists' }, 30000);
+  if (res.ok) {
+    S.lists = res; S.listsAt = Date.now();
+    store.set('lists', JSON.stringify({ code: S.code, at: S.listsAt, lists: res }));
+    if (blocking || ['home', 'jobs', 'bills', 'owes', 'stays', 'who'].includes(S.screen)) afterLists(blocking);
+    return true;
+  }
+  if (res.error === 'bad_code' || res.error === 'not_set_up') { store.set('lists', ''); return badLink(res.error); }
+  if (blocking) failScreen(res.error, () => { spinner(L('Opening Bratteng…', 'Åpner Bratteng…')); refresh(true); });
+  return false;
+}
+function afterLists(force) {
+  const me = S.person && S.lists.people.find((p) => p.name === S.person);
+  if (!me) { if (S.person) S.err = 'unknown'; S.person = ''; store.set('person', ''); return who(); }
+  S.lang = me.lang === 'no' ? 'no' : 'en';
+  syncUrl();
+  if (force || !S.screen || ['who', 'home', 'jobs', 'bills', 'owes', 'stays'].includes(S.screen)) (S.screen === 'jobs' ? jobs : S.screen === 'bills' ? bills : S.screen === 'owes' ? owes : S.screen === 'stays' ? stays : home)();
+}
+function show(screen, html) { S.screen = screen; app.innerHTML = html; window.scrollTo(0, 0); }
+
+// ---------- screens
+function badLink(why) {
+  S.lang = 'en';
+  show('bad', '<div class="top"><img src="icon-192.png" alt=""><div class="who"><b>Bratteng</b></div></div>' +
+    '<div class="card"><h1>' + (why === 'not_set_up' ? L('The Genie is not switched on yet.', 'Genie er ikke slått på ennå.') : L('This link does not work.', 'Denne lenken virker ikke.')) + '</h1>' +
+    '<p>' + L('Ask whoever sent you the link for a new one, and open it again.', 'Be den som sendte deg lenken om en ny, og åpne den på nytt.') + '</p></div>');
+}
+function spinner(msg, sub) { show('wait', '<div class="spin" role="status"></div><h2 class="center">' + msg + '</h2>' + (sub ? '<p class="center" id="sub">' + sub + '</p>' : '<p class="center" id="sub"></p>')); }
+function failScreen(error, retry, alt) {
+  const msg = error === 'network' ? L('No connection right now.', 'Ingen forbindelse akkurat nå.')
+    : error === 'no_api' ? L('The app is not connected to the Genie yet.', 'Appen er ikke koblet til Genie ennå.')
+    : error === 'photo' ? L('The phone could not open that photo.', 'Telefonen fikk ikke åpnet bildet.')
+    : L('Something went wrong at the Genie.', 'Noe gikk galt hos Genie.');
+  show('fail', '<div class="card"><h1>' + msg + '</h1><p>' + L('Nothing has been lost. Try again in a moment.', 'Ingenting er tapt. Prøv igjen om litt.') + '</p></div>' +
+    '<button class="btn" data-act="retry"><span class="ico">↻</span><span>' + L('Try again', 'Prøv igjen') + '</span></button>' +
+    (alt ? '<button class="btn light" data-act="alt"><span class="ico">✎</span><span>' + alt.label + '</span></button>' : '') +
+    '<button class="link" data-act="home">' + P('Back to start', 'Til start') + '</button>');
+  S.retry = retry; S.alt = alt && alt.fn;
+}
+function who() {
+  const note = S.err === 'unknown' ? '<p class="warn">' + L('We could not find your name. Please pick it again.', 'Vi fant ikke navnet ditt. Velg det på nytt.') + '</p>' : '';
+  S.err = '';
+  show('who', '<div class="top"><img src="icon-192.png" alt=""><div class="who"><b>Bratteng</b></div></div>' +
+    '<h1>' + L('Who are you?', 'Hvem er du?') + '</h1><p class="l2">' + L('Tap your name. The phone remembers it.', 'Trykk på navnet ditt. Telefonen husker det.') + '</p>' + note +
+    S.lists.people.map((p) => '<button class="pick" data-act="iam" data-name="' + esc(p.name) + '"><b>' + esc(p.name) + '</b></button>').join(''));
+}
+function home() {
+  const L0 = S.lists, jobsN = L0.jobs.length, billsN = L0.bills.length;
+  const ago = S.listsAt ? Math.round((Date.now() - S.listsAt) / 60000) : 0;
+  show('home', '<div class="top"><img src="icon-192.png" alt=""><div class="who"><b>' + (S.lang === 'no' ? 'Hei' : 'Hi') + ' ' + esc(S.person) + '</b>' +
+    '<span class="l2">Bratteng</span></div><button class="link" data-act="notme" style="font-size:15px">' + P('Not you?', 'Ikke deg?') + '</button></div>' +
+    '<button class="btn big" data-act="receipt"><span class="ico">🧾</span><span>' + L('Receipt', 'Kvittering') + '</span></button>' +
+    '<button class="link" data-act="pickphoto" style="margin:-6px 0 8px">' + P('Photo already taken?', 'Bilde tatt fra før?') + '</button>' +
+    '<div class="grid">' +
+    '<button class="btn moss" data-act="jobdone"><span class="ico">✅</span><span>' + L('Job done', 'Jobb ferdig') + '</span></button>' +
+    '<button class="btn falu" data-act="problem"><span class="ico">⚠️</span><span>' + L('Something’s wrong', 'Noe er galt') + '</span></button>' +
+    '<button class="btn" data-act="voice"><span class="ico">🎙️</span><span>' + L('Voice note', 'Talemelding') + '</span></button>' +
+    '<button class="btn" data-act="visit"><span class="ico">🏠</span><span>' + L('We’re at the house', 'Vi er på huset') + '</span></button>' +
+    '</div>' + (L0.stays_on ? '<button class="btn" style="margin-top:12px" data-act="stay"><span class="ico">📅</span><span>' + L('Book a stay', 'Bestill opphold') + '</span></button>' : '') +
+    '<div class="views">' +
+    (L0.stays_on ? '<button class="view" data-act="stays"><span>' + L('Who’s at the house when', 'Hvem er på huset når') + '</span><span class="n">' + stayList().length + '</span></button>' : '') +
+    '<button class="view" data-act="jobs"><span>' + L('Open jobs', 'Åpne jobber') + '</span><span class="n">' + jobsN + '</span></button>' +
+    '<button class="view" data-act="bills"><span>' + L('Bills to pay', 'Regninger å betale') + '</span><span class="n">' + billsN + '</span></button>' +
+    '<button class="view" data-act="owes"><span>' + L('Who owes whom', 'Hvem skylder hvem') + '</span><span class="n">kr</span></button>' +
+    '</div><p class="foot">' + (ago > 1 ? P('Updated ' + ago + ' min ago', 'Oppdatert for ' + ago + ' min siden') + ' · ' : '') +
+    '<button class="link" data-act="reload" style="font-size:15px">' + P('Refresh', 'Oppdater') + '</button><br>' + VERSION + '</p>');
+}
+function listTop(title) {
+  return '<div class="top"><button class="link" data-act="home">← ' + P('Back', 'Tilbake') + '</button></div><h1>' + title + '</h1>';
+}
+function jobs() {
+  const J = S.lists.jobs.slice().sort((a, b) => S.lists.priorities.indexOf(a.priority) - S.lists.priorities.indexOf(b.priority) || a.no - b.no);
+  show('jobs', listTop(L('Open jobs', 'Åpne jobber')) + '<div class="list">' + (J.length ? J.map((j) =>
+    '<div class="item"><div class="t">' + esc(half(j.priority, 0).slice(0, 2)) + ' ' + jw(j.no) + ': ' + esc(j.problem) + '</div>' +
+    '<div class="m">' + esc(j.area) + (j.where ? ' · ' + esc(j.where) : '') + ' · ' + esc(j.priority.replace(/^\S+\s/, '')) + '</div></div>').join('')
+    : '<p>' + L('No open jobs.', 'Ingen åpne jobber.') + '</p>') + '</div>');
+}
+function bills() {
+  const B = S.lists.bills, t = today();
+  show('bills', listTop(L('Bills to pay', 'Regninger å betale')) +
+    '<p class="l2">' + L('Pay from your own bank, then tap “I paid this”.', 'Betal fra egen nettbank, og trykk «Jeg har betalt».') + '</p><div class="list">' +
+    (B.length ? B.map((b) => '<div class="item"><div class="t">' + esc(b.vendor) + ' · ' + kr(b.amount) + (b.currency && b.currency !== 'NOK' ? ' (' + esc(b.currency) + ')' : '') + '</div>' +
+      '<div class="m ' + (b.due && b.due < t ? 'neg' : '') + '">' + P('Due', 'Forfall') + ' ' + esc(ddmm(b.due)) + (b.due && b.due < t ? ' · ' + P('overdue', 'forfalt') : '') + '</div>' +
+      (b.what ? '<div class="m">' + esc(b.what) + '</div>' : '') + (b.ref ? '<div class="m">' + esc(b.ref) + '</div>' : '') +
+      '<button class="btn moss" style="margin-top:10px;min-height:64px" data-act="paid" data-id="' + esc(b.id) + '"><span class="ico">✓</span><span>' + L('I paid this', 'Jeg har betalt') + '</span></button></div>').join('')
+      : '<p>' + L('Nothing to pay right now.', 'Ingenting å betale nå.') + '</p>') + '</div>');
+}
+function owes() {
+  const B = S.lists.balances;
+  show('owes', listTop(L('Who owes whom', 'Hvem skylder hvem')) + '<div class="card">' + B.map((b) => {
+    const v = b.balance, cls = v >= 1 ? 'pos' : v <= -1 ? 'neg' : '';
+    const words = v >= 1 ? L('is owed', 'har til gode') : v <= -1 ? L('owes', 'skylder') : L('is square', 'er ajour');
+    return '<div class="row"><div class="k"><b style="color:var(--ink);font-size:20px">' + esc(b.owner) + '</b><br>' + Math.round(b.share * 100) + ' %</div>' +
+      '<div class="v ' + cls + '">' + words + (Math.abs(v) >= 1 ? '<br><span class="amount">' + kr(Math.abs(v), true) + '</span>' : '') + '</div></div>';
+  }).join('') + '</div><p class="l2">' + L('Shared house costs that have been paid, split 50 / 25 / 25, minus money already sent between owners.',
+    'Felles husutgifter som er betalt, delt 50 / 25 / 25, minus penger som allerede er overført mellom eierne.') + '</p>');
+}
+
+function stays() {
+  const A = stayList(), t = today();
+  show('stays', listTop(L('Who’s at the house when', 'Hvem er på huset når')) +
+    '<button class="btn" data-act="stay"><span class="ico">📅</span><span>' + L('Book a stay', 'Bestill opphold') + '</span></button><div class="list">' +
+    (A.length ? A.map((s) => '<div class="item"><div class="t">' + esc(rng(s.from, s.to)) + '</div>' +
+      '<div style="font-size:21px">' + esc(s.who) + (s.from <= t ? ' · <span class="pos">' + P('there now', 'der nå') + '</span>' : '') + '</div>' +
+      (s.note ? '<div class="m">' + esc(s.note) + '</div>' : '') +
+      (s.by === S.person ? '<button class="btn light" style="margin:10px 0 0;min-height:60px;font-size:19px" data-act="scancel" data-id="' + esc(s.id) + '"><span class="ico" style="font-size:24px">✕</span><span>' + L('Cancel this stay', 'Avlys dette oppholdet') + '</span></button>' : '') +
+      '</div>').join('')
+      : '<p>' + L('Nobody has booked a stay yet.', 'Ingen har bestilt opphold ennå.') + '</p>') + '</div>');
+}
+function stay() {
+  S.kind = 'stay'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = true;
+  S.proposal = { stay: { from: '', to: '', who: S.person, note: '' } };
+  S.original = JSON.stringify(S.proposal);
+  confirm();
+}
+// who else has booked the days in the form (the house can be shared, so this only informs)
+function clash() {
+  const el = $('s_clash');
+  if (!el || !$('f_sfrom')) return;
+  const a = $('f_sfrom').value, b = $('f_sto').value || a;
+  const hit = a ? stayList().filter((s) => s.from <= b && s.to >= a) : [];
+  el.innerHTML = hit.length ? '<div class="ask">' + L('Others have booked those days:', 'Andre har bestilt de dagene:') +
+    hit.map((s) => '<div style="margin-top:6px"><b>' + esc(s.who) + '</b> · ' + esc(rng(s.from, s.to)) + '</div>').join('') +
+    '<div style="margin-top:6px">' + L('You can still book. The house can be shared.', 'Du kan bestille likevel. Huset kan deles.') + '</div></div>' : '';
+}
+
+// ---------- the five buttons
+function startPhoto(kind, inputId) { S.kind = kind; S.files = []; S.thumbs = []; S.text = ''; S.sid = ''; $(inputId).value = ''; $(inputId).click(); }
+async function gotPhoto(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  spinner(L('Getting the photo ready…', 'Gjør klar bildet…'));
+  const one = await shrink(f);
+  if (!one) return failScreen('photo', () => home());
+  S.files.push(one.file); S.thumbs.push(one.url);
+  if (S.kind === 'receipt') return read();
+  if (S.kind === 'problem') return problem(true);
+  if (S.kind === 'job_done') return confirm();
+}
+function shrink(file) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(async (b) => { if (!b) return resolve(null); resolve({ file: { name: 'photo.jpg', mime: 'image/jpeg', data: await b64(b) }, url: URL.createObjectURL(b) }); }, 'image/jpeg', 0.82);
+    };
+    img.onerror = async () => {          // a format the phone cannot draw: send it as it is (if not huge)
+      URL.revokeObjectURL(url);
+      if (file.size > 7e6) return resolve(null);
+      resolve({ file: { name: file.name || 'photo', mime: file.type || 'application/octet-stream', data: await b64(file) }, url: '' });
+    };
+    img.src = url;
+  });
+}
+function b64(blob) { return new Promise((res) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.readAsDataURL(blob); }); }
+
+function problem(hasPhoto) {
+  S.kind = 'problem';
+  if (!hasPhoto && S.screen !== 'problem') { S.files = []; S.thumbs = []; S.sid = ''; }
+  const t = $('ptext') ? $('ptext').value : S.text;
+  show('problem', listTop(L('Something’s wrong', 'Noe er galt')) +
+    S.thumbs.map((u) => u ? '<img class="thumb" src="' + u + '" alt="">' : '').join('') +
+    '<button class="btn light" data-act="pphoto"><span class="ico">📷</span><span>' + (S.files.length ? L('Add another photo', 'Ta et bilde til') : L('Take a photo', 'Ta bilde')) + '</span></button>' +
+    '<label for="ptext">' + P('What is wrong, and where?', 'Hva er galt, og hvor?') + '</label>' +
+    '<textarea id="ptext" placeholder="' + esc(P('e.g. gutter loose on the sea side', 'f.eks. takrenna løs på sjøsiden')) + '">' + esc(t) + '</textarea>' +
+    '<p class="l2" style="font-size:16px">' + L('Tip: tap the microphone on the keyboard to talk instead of typing.', 'Tips: trykk på mikrofonen på tastaturet for å snakke i stedet for å skrive.') + '</p>' +
+    '<button class="btn falu" data-act="psend"><span class="ico">➜</span><span>' + L('Send to Genie', 'Send til Genie') + '</span></button>');
+}
+function jobPick() {
+  S.kind = 'job_done'; S.files = []; S.thumbs = []; S.sid = '';
+  const J = S.lists.jobs;
+  show('jobpick', listTop(L('Which job is done?', 'Hvilken jobb er ferdig?')) + (J.length ? J.map((j) =>
+    '<button class="pick" data-act="job" data-no="' + j.no + '"><b>' + jw(j.no) + '</b><br>' + esc(j.problem) +
+    '<br><span class="l2">' + esc(j.area) + (j.where ? ' · ' + esc(j.where) : '') + '</span></button>').join('')
+    : '<p>' + L('No open jobs. Use “Something’s wrong” to add one.', 'Ingen åpne jobber. Bruk «Noe er galt» for å legge til.') + '</p>'));
+}
+function visit() {
+  S.kind = 'visit'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = true;
+  const t = today(), d = new Date(); d.setDate(d.getDate() + 7);
+  const to = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  S.proposal = { visit: { from: t, to, who: S.person, what: '' } };
+  S.original = JSON.stringify(S.proposal);
+  confirm();
+}
+
+// ---------- voice note: record, turn into a small WAV (a format Gemini always reads), send
+let rec = null, recStream = null, recChunks = [], recTimer = null, recStart = 0;
+async function voice() {
+  S.kind = 'voice'; S.files = []; S.thumbs = []; S.text = ''; S.sid = '';
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) return micNo();
+  try { recStream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { return micNo(); }
+  recChunks = [];
+  try { rec = new MediaRecorder(recStream); } catch (e) { return micNo(); }
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
+  rec.start(250); recStart = Date.now();
+  show('recording', '<h1 class="center" style="margin-top:20px">' + L('Talking to Genie', 'Snakker til Genie') + '</h1>' +
+    '<p class="center l2">' + L('Say what happened, in English or Norwegian.', 'Si hva som skjedde, på norsk eller engelsk.') + '</p>' +
+    '<div class="rec" id="rt">0:00</div>' +
+    '<button class="btn falu big" data-act="vstop"><span class="ico">■</span><span>' + L('Stop and send', 'Stopp og send') + '</span></button>' +
+    '<button class="link" data-act="vcancel">' + P('Cancel', 'Avbryt') + '</button>');
+  recTimer = setInterval(() => {
+    const s = Math.floor((Date.now() - recStart) / 1000);
+    if ($('rt')) $('rt').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    if (s >= 120) voiceStop(true);
+  }, 300);
+}
+function voiceEnd() { clearInterval(recTimer); if (recStream) recStream.getTracks().forEach((t) => t.stop()); recStream = null; }
+function voiceStop(send) {
+  if (!rec) return;
+  const r = rec; rec = null;
+  r.onstop = async () => {
+    voiceEnd();
+    if (!send) return home();
+    const blob = new Blob(recChunks, { type: r.mimeType || 'audio/webm' });
+    spinner(L('Getting the voice note ready…', 'Gjør klar talemeldingen…'));
+    let file = null;
+    try { file = await toWav(blob); } catch (e) { file = null; }
+    if (!file) { const mime = (r.mimeType || 'audio/webm').split(';')[0]; file = { name: 'voice.' + (mime.split('/')[1] || 'webm'), mime, data: await b64(blob) }; }
+    S.files = [file];
+    read();
+  };
+  try { r.stop(); } catch (e) { voiceEnd(); home(); }
+}
+async function toWav(blob) {
+  const AC = window.AudioContext || window.webkitAudioContext, OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!AC || !OAC) return null;
+  const ac = new AC();
+  const ab0 = await blob.arrayBuffer();
+  const buf = await new Promise((res, rej) => { const pr = ac.decodeAudioData(ab0, res, rej); if (pr && pr.then) pr.then(res, rej); });
+  if (ac.close) ac.close();
+  const rate = 16000, len = Math.max(1, Math.ceil(buf.duration * rate));
+  const off = new OAC(1, len, rate), src = off.createBufferSource();
+  src.buffer = buf; src.connect(off.destination); src.start(0);
+  const out = await new Promise((res) => { const p = off.startRendering(); if (p && p.then) p.then(res); else off.oncomplete = (e) => res(e.renderedBuffer); });
+  const pcm = out.getChannelData(0), ab = new ArrayBuffer(44 + pcm.length * 2), v = new DataView(ab);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + pcm.length * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, pcm.length * 2, true);
+  for (let i = 0; i < pcm.length; i++) { const x = Math.max(-1, Math.min(1, pcm[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true); }
+  return { name: 'voice.wav', mime: 'audio/wav', data: await b64(new Blob([ab], { type: 'audio/wav' })) };
+}
+function micNo() {
+  voiceEnd();
+  S.kind = 'voice';
+  show('micno', listTop(L('Voice note', 'Talemelding')) +
+    '<div class="warn">' + L('The phone did not let the app use the microphone. You can allow it in the phone’s settings, or just type it here.',
+      'Telefonen lot ikke appen bruke mikrofonen. Du kan tillate det i telefonens innstillinger, eller bare skrive her.') + '</div>' +
+    '<label for="ptext">' + P('What happened?', 'Hva skjedde?') + '</label><textarea id="ptext"></textarea>' +
+    '<button class="btn" data-act="tsend"><span class="ico">➜</span><span>' + L('Send to Genie', 'Send til Genie') + '</span></button>');
+}
+
+// ---------- read: Genie's proposal (nothing saved yet)
+async function read() {
+  S.sid = ''; S.edit = false; S.manual = false; S.reason = '';
+  spinner(L('Genie is reading…', 'Genie leser…'), '');
+  const slow = setTimeout(() => { if ($('sub')) $('sub').innerHTML = L('Still working. A slow connection can take a minute.', 'Jobber fortsatt. Treg forbindelse kan ta et minutt.'); }, 9000);
+  const res = await call({ action: 'read', kind: S.kind, text: S.text, files: S.files }, 120000);
+  clearTimeout(slow);
+  if (!res.ok) return apiError(res, read);
+  S.proposal = res.proposal; S.manual = !!res.manual; S.reason = res.reason || '';
+  S.edit = S.manual;
+  S.original = JSON.stringify(S.proposal);
+  confirm();
+}
+function apiError(res, retry) {
+  if (res.error === 'bad_code' || res.error === 'not_set_up') return badLink(res.error);
+  if (res.error === 'unknown_person') { S.err = 'unknown'; S.person = ''; store.set('person', ''); return who(); }
+  failScreen(res.error, retry);
+}
+
+// ---------- confirm: what Genie read, then Save or Fix
+const opt = (list, cur, labelFn) => list.map((v) => '<option value="' + esc(v) + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + esc(labelFn ? labelFn(v) : v) + '</option>').join('');
+const field = (id, label, html) => '<label for="' + id + '">' + label + '</label>' + html;
+const inp = (id, val, extra) => '<input id="' + id + '" value="' + esc(val == null ? '' : val) + '" ' + (extra || '') + '>';
+const row = (k, v) => '<div class="row"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+function jobLabel(no) { const j = S.lists.jobs.find((x) => String(x.no) === String(no)); return j ? jw(j.no) + ': ' + j.problem : (no ? jw(no) : P('No job', 'Ingen jobb')); }
+function confirm() {
+  const p = S.proposal = S.proposal || {}, E = S.edit;
+  if (S.kind === 'job_done' && !p.job) p.job = { action: 'done', job_no: S.jobNo, note: '' };
+  let h = listTop(p.stay_cancel ? L('Cancel this stay?', 'Avlyse oppholdet?') : S.kind === 'stay' ? L('Book a stay', 'Bestill opphold')
+    : S.kind === 'visit' ? L('We’re at the house', 'Vi er på huset') : S.kind === 'job_done' ? L('Job done', 'Jobb ferdig')
+    : S.kind === 'bill_paid' ? L('I paid this', 'Jeg har betalt') : L('Check what Genie read', 'Sjekk hva Genie leste'));
+  if (S.manual) h += '<div class="warn">' + (S.reason === 'quota'
+    ? L('Genie has used up today’s free reading. Type it in yourself; the photo or recording is saved too.', 'Genie har brukt opp dagens gratis lesing. Skriv det inn selv; bildet eller opptaket lagres også.')
+    : L('Genie can’t read right now. Type it in yourself; the photo or recording is saved too.', 'Genie kan ikke lese akkurat nå. Skriv det inn selv; bildet eller opptaket lagres også.')) + '</div>';
+  h += S.thumbs.map((u) => u ? '<img class="thumb" src="' + u + '" alt="">' : '').join('');
+  if (p.reply && !S.manual) h += '<div class="say">' + esc(p.reply) + '</div>';
+  if (p.transcript) h += '<div class="say"><span class="l2">' + P('Genie heard', 'Genie hørte') + '</span>«' + esc(p.transcript) + '»</div>';
+  (p.questions || []).forEach((q) => { h += '<div class="ask">' + esc(q) + '</div>'; });
+  h += '<div class="card">';
+  const x = p.expense;
+  if (x) {
+    if (E) {
+      h += field('f_amount', P('Amount (kr)', 'Beløp (kr)'), inp('f_amount', x.amount == null ? '' : String(x.amount).replace('.', ','), 'inputmode="decimal" autocomplete="off" placeholder="0,00"')) +
+        '<div class="two"><div>' + field('f_cur', P('Currency', 'Valuta'), '<select id="f_cur">' + opt(['NOK', 'AUD', 'EUR', 'SEK', 'GBP', 'USD'], x.currency || 'NOK') + '</select>') + '</div>' +
+        '<div>' + field('f_date', P('Date', 'Dato'), inp('f_date', x.date || today(), 'type="date"')) + '</div></div>' +
+        field('f_vendor', P('Shop', 'Butikk'), inp('f_vendor', x.vendor, 'autocomplete="off"')) +
+        field('f_desc', P('What was it?', 'Hva var det?'), inp('f_desc', x.description, 'autocomplete="off"')) +
+        field('f_cat', P('Type', 'Type'), '<select id="f_cat">' + opt(S.lists.categories, x.category, (c) => S.lang === 'no' ? c : half(c, 1) + ' · ' + half(c, 0)) + '</select>') +
+        field('f_job', P('For a job?', 'Til en jobb?'), '<select id="f_job"><option value="">' + esc(P('No job', 'Ingen jobb')) + '</option>' +
+          opt(S.lists.jobs.map((j) => j.no), x.job_no, jobLabel) + '</select>') +
+        field('f_shared', P('Shared house cost?', 'Felles husutgift?'), '<select id="f_shared">' + opt(['Yes · Ja', 'No · Nei', 'Ask · Spør'], x.shared, (v) => S.lang === 'no' ? half(v, 1) + ' · ' + half(v, 0) : v) + '</select>');
+    } else {
+      h += '<div class="amount">' + kr(x.amount) + (x.currency && x.currency !== 'NOK' ? ' <small>' + esc(x.currency) + '</small>' : '') + '</div>' +
+        row(P('Shop', 'Butikk'), esc(x.vendor || '–')) + row(P('Date', 'Dato'), esc(ddmm(x.date))) + row(P('What', 'Hva'), esc(x.description || '–')) +
+        row(P('Type', 'Type'), esc(S.lang === 'no' ? half(x.category, 0) : half(x.category, 1))) + row(P('Job', 'Jobb'), esc(x.job_no ? jobLabel(x.job_no) : P('No job', 'Ingen jobb'))) +
+        row(P('Shared?', 'Felles?'), esc(S.lang === 'no' ? half(x.shared, 1) : half(x.shared, 0))) + row(P('Paid by', 'Betalt av'), esc(x.paid_by || S.person));
+    }
+  }
+  const j = p.job;
+  if (j && j.action === 'done') {
+    h += '<div class="amount" style="font-size:24px">✅ ' + esc(jobLabel(j.job_no)) + '</div>' + row(P('Done by', 'Gjort av'), esc(S.person)) + row(P('Date', 'Dato'), esc(ddmm(today()))) +
+      field('f_note', P('Anything to add? (optional)', 'Noe å legge til? (valgfritt)'), inp('f_note', j.note, 'autocomplete="off"')) +
+      '<button class="btn light" style="margin-top:12px" data-act="jphoto"><span class="ico">📷</span><span>' + (S.files.length ? L('Photo added. Add another?', 'Bilde lagt til. Ett til?') : L('Add a photo (optional)', 'Legg til bilde (valgfritt)')) + '</span></button>';
+  } else if (j) {
+    if (E) {
+      h += field('f_problem', P('What is wrong?', 'Hva er galt?'), '<textarea id="f_problem">' + esc(j.problem) + '</textarea>') +
+        field('f_where', P('Where?', 'Hvor?'), inp('f_where', j.where, 'autocomplete="off"')) +
+        field('f_area', P('Part of the house', 'Del av huset'), '<select id="f_area">' + opt(S.lists.areas, j.area, (a) => S.lang === 'no' ? half(a, 1) + ' · ' + half(a, 0) : a) + '</select>') +
+        field('f_prio', P('How urgent?', 'Hvor viktig?'), '<select id="f_prio">' + opt(S.lists.priorities, j.priority) + '</select>');
+    } else {
+      h += '<div class="t" style="font-size:22px;font-weight:800">' + P('New job', 'Ny jobb') + '</div>' + row(P('Problem', 'Problem'), esc(j.problem || '–')) +
+        row(P('Where', 'Hvor'), esc(j.where || '–')) + row(P('Part', 'Del'), esc(S.lang === 'no' ? half(j.area, 1) : half(j.area, 0))) + row(P('Urgent?', 'Viktig?'), esc(j.priority));
+    }
+  }
+  const v = p.visit;
+  if (v) {
+    if (S.kind === 'visit' || E) {
+      h += '<div class="two"><div>' + field('f_from', P('From', 'Fra'), inp('f_from', v.from || today(), 'type="date"')) + '</div><div>' +
+        field('f_to', P('To', 'Til'), inp('f_to', v.to || '', 'type="date"')) + '</div></div>' +
+        field('f_who', P('Who is there?', 'Hvem er der?'), inp('f_who', v.who, 'autocomplete="off"')) +
+        field('f_what', P('Plans or jobs (optional)', 'Planer eller jobber (valgfritt)'), inp('f_what', v.what, 'autocomplete="off"'));
+    } else h += '<div class="t" style="font-weight:800">🏠 ' + P('Visit', 'Besøk') + '</div>' + row(P('Dates', 'Datoer'), esc(v.dates)) + row(P('Who', 'Hvem'), esc(v.who || S.person));
+  }
+  const t = p.transfer;
+  if (t) {
+    const owners = S.lists.balances.map((b) => b.owner);
+    if (E) h += '<div class="two"><div>' + field('f_tfrom', P('From', 'Fra'), '<select id="f_tfrom">' + opt(owners, t.from_owner) + '</select>') + '</div><div>' +
+      field('f_tto', P('To', 'Til'), '<select id="f_tto">' + opt(owners, t.to_owner) + '</select>') + '</div></div>' +
+      field('f_tamt', P('Amount (kr)', 'Beløp (kr)'), inp('f_tamt', String(t.amount_nok == null ? '' : t.amount_nok).replace('.', ','), 'inputmode="decimal"'));
+    else h += '<div class="t" style="font-weight:800">' + P('Money sent between owners', 'Penger overført mellom eiere') + '</div>' +
+      row(esc(t.from_owner) + ' → ' + esc(t.to_owner), '<span class="amount" style="font-size:26px">' + kr(t.amount_nok) + '</span>');
+  }
+  const b = p.bill_payment;
+  if (b) { const bill = S.lists.bills.find((y) => y.id === b.bill_id) || { vendor: b.bill_id };
+    h += '<div class="amount" style="font-size:26px">' + esc(bill.vendor) + ' · ' + kr(bill.amount) + '</div>' + row(P('Paid by', 'Betalt av'), esc(S.person)) + row(P('Paid on', 'Betalt'), esc(ddmm(today()))); }
+  const s = p.stay, c = p.stay_cancel;
+  if (s) {
+    h += '<div class="two"><div>' + field('f_sfrom', P('First day', 'Første dag'), inp('f_sfrom', s.from || '', 'type="date" min="' + today() + '"')) + '</div><div>' +
+      field('f_sto', P('Last day', 'Siste dag'), inp('f_sto', s.to || '', 'type="date" min="' + today() + '"')) + '</div></div>' +
+      field('f_swho', P('Who is coming?', 'Hvem kommer?'), inp('f_swho', s.who, 'autocomplete="off"')) +
+      field('f_snote', P('Note (optional)', 'Notat (valgfritt)'), inp('f_snote', s.note, 'autocomplete="off"')) + '<div id="s_clash"></div>';
+  }
+  if (c) { const o = stayList().find((y) => y.id === c.id) || {};
+    h += '<div class="amount" style="font-size:26px">📅 ' + esc(rng(o.from, o.to)) + '</div>' + row(P('Who', 'Hvem'), esc(o.who || '–')); }
+  if (!x && !j && !v && !t && !b && !s && !c) {
+    h += '<p>' + (S.kind === 'voice' && !S.manual ? L('Genie found nothing to put in the sheet. Save it as a note?', 'Genie fant ikke noe å føre i arket. Lagre som notat?')
+      : L('What was it about?', 'Hva gjaldt det?')) + '</p>' + '<textarea id="f_note2" placeholder="' + esc(P('Note', 'Notat')) + '">' + esc(p.note || '') + '</textarea>';
+  }
+  h += '</div>' + (S.err ? '<p class="bad">' + S.err + '</p>' : '');
+  h += c ? '<button class="btn falu big" data-act="save"><span class="ico">✕</span><span>' + L('Yes, cancel it', 'Ja, avlys') + '</span></button>'
+    : '<button class="btn moss big" data-act="save"><span class="ico">✓</span><span>' + L('Save', 'Lagre') + '</span></button>';
+  const canFix = !E && (x || (j && j.action !== 'done') || (v && S.kind !== 'visit') || t);
+  if (canFix) h += '<button class="btn light" data-act="fix"><span class="ico">✎</span><span>' + L('Fix', 'Rett') + '</span></button>';
+  h += '<button class="link" data-act="home">' + (c ? P('No, keep the stay', 'Nei, behold oppholdet') : P('Cancel, save nothing', 'Avbryt, lagre ingenting')) + '</button>';
+  S.err = '';
+  show('confirm', h);
+  if (s) clash();
+}
+function collect() {
+  const p = S.proposal, val = (id) => ($(id) ? $(id).value : undefined);
+  if (p.expense && $('f_amount')) Object.assign(p.expense, { amount: val('f_amount'), currency: val('f_cur'), date: val('f_date'), vendor: val('f_vendor'),
+    description: val('f_desc'), category: val('f_cat'), job_no: val('f_job') ? Number(val('f_job')) : null, shared: val('f_shared') });
+  if (p.job && p.job.action === 'done' && $('f_note')) p.job.note = val('f_note');
+  if (p.job && p.job.action !== 'done' && $('f_problem')) Object.assign(p.job, { problem: val('f_problem'), where: val('f_where'), area: val('f_area'), priority: val('f_prio') });
+  if (p.visit && $('f_from')) Object.assign(p.visit, { from: val('f_from'), to: val('f_to'), who: val('f_who'), what: val('f_what') });
+  if (p.transfer && $('f_tfrom')) Object.assign(p.transfer, { from_owner: val('f_tfrom'), to_owner: val('f_tto'), amount_nok: val('f_tamt') });
+  if (p.stay && $('f_sfrom')) Object.assign(p.stay, { from: val('f_sfrom'), to: val('f_sto') || val('f_sfrom'), who: val('f_swho'), note: val('f_snote') });
+  if ($('f_note2')) p.note = val('f_note2');
+}
+async function save() {
+  collect();
+  const p = S.proposal;
+  if (p.expense && !(num(p.expense.amount) > 0)) { S.edit = true; S.err = P('Please type the amount.', 'Skriv inn beløpet.'); return confirm(); }
+  if (p.job && p.job.action === 'new' && !String(p.job.problem || '').trim()) { S.edit = true; S.err = P('Please say what is wrong.', 'Skriv hva som er galt.'); return confirm(); }
+  if (p.transfer && !(num(p.transfer.amount_nok) > 0)) { S.edit = true; S.err = P('Please type the amount.', 'Skriv inn beløpet.'); return confirm(); }
+  if (p.visit && p.visit.from !== undefined) {
+    if (!p.visit.from) { S.err = P('Please pick the first day.', 'Velg første dag.'); return confirm(); }
+    p.visit.dates = ddmm(p.visit.from) + (p.visit.to && p.visit.to !== p.visit.from ? ' – ' + ddmm(p.visit.to) : '');
+    p.visit.year = Number(p.visit.from.slice(0, 4));
+  }
+  if (p.stay) {
+    if (!p.stay.from) { S.err = P('Please pick the first day.', 'Velg første dag.'); return confirm(); }
+    if (p.stay.to < p.stay.from) { S.err = P('The last day is before the first day.', 'Siste dag er før første dag.'); return confirm(); }
+    if (p.stay.to < today()) { S.err = P('Those days have already passed.', 'De dagene er allerede forbi.'); return confirm(); }
+  }
+  if (p.expense) p.expense.amount = num(p.expense.amount);
+  if (p.transfer) p.transfer.amount_nok = num(p.transfer.amount_nok);
+  const edited = JSON.stringify(p) !== S.original && S.kind !== 'visit' && S.kind !== 'stay';
+  S.sid = S.sid || rid();
+  spinner(L('Saving…', 'Lagrer…'));
+  const res = await call({ action: 'save', kind: S.kind, sid: S.sid, manual: S.manual, edited, record: p, files: S.files }, 120000);
+  if (!res.ok) {
+    if (res.error === 'need_amount') { S.edit = true; S.err = P('Please type the amount.', 'Skriv inn beløpet.'); return confirm(); }
+    if (res.error === 'job_not_found' || res.error === 'bill_not_found') { refresh(false); S.err = P('That one is already done. Nothing was saved.', 'Den er allerede ferdig. Ingenting ble lagret.'); return confirm(); }
+    if (res.error === 'bad_dates') { S.err = P('The last day is before the first day.', 'Siste dag er før første dag.'); return confirm(); }
+    if (res.error === 'past_dates') { S.err = P('Those days have already passed.', 'De dagene er allerede forbi.'); return confirm(); }
+    if (res.error === 'too_long') { S.err = P('A stay can be 60 days at most.', 'Et opphold kan være høyst 60 dager.'); return confirm(); }
+    if (res.error === 'no_calendar') { S.err = P('The calendar is not switched on yet. Ask whoever sent you the link.', 'Kalenderen er ikke slått på ennå. Spør den som sendte deg lenken.'); return confirm(); }
+    if (res.error === 'stay_not_found' || res.error === 'not_your_stay') { refresh(false); S.err = P('That stay is already gone, or someone else booked it. Nothing was changed.', 'Oppholdet er allerede borte, eller noen andre bestilte det. Ingenting ble endret.'); return confirm(); }
+    if (res.error === 'need_problem' || res.error === 'need_dates' || res.error === 'bad_transfer' || res.error === 'nothing_to_save') { S.edit = true; S.err = P('Please fill in the missing part.', 'Fyll inn det som mangler.'); return confirm(); }
+    return apiError(res, save);
+  }
+  done(res);
+  refresh(false);
+}
+function summary(p) {
+  const out = [];
+  if (p.expense) out.push('🧾 ' + kr(p.expense.amount) + (p.expense.currency && p.expense.currency !== 'NOK' ? ' (' + esc(p.expense.currency) + ')' : '') + ' · ' + esc(p.expense.vendor || ''));
+  if (p.job && p.job.action === 'done') out.push('✅ ' + esc(jobLabel(p.job.job_no)) + ' · ' + P('done', 'ferdig'));
+  else if (p.job) out.push('⚠️ ' + P('New job', 'Ny jobb') + ': ' + esc(p.job.problem));
+  if (p.visit) out.push('🏠 ' + esc(p.visit.dates) + ' · ' + esc(p.visit.who || S.person));
+  if (p.stay) out.push('📅 ' + esc(rng(p.stay.from, p.stay.to)) + ' · ' + esc(p.stay.who || S.person));
+  if (p.stay_cancel) { const o = stayList().find((y) => y.id === p.stay_cancel.id) || {}; out.push('📅 ' + esc(rng(o.from, o.to)) + ' · ' + P('cancelled', 'avlyst')); }
+  if (p.transfer) out.push('↔ ' + esc(p.transfer.from_owner) + ' → ' + esc(p.transfer.to_owner) + ' · ' + kr(p.transfer.amount_nok));
+  if (p.bill_payment) { const bl = S.lists.bills.find((y) => y.id === p.bill_payment.bill_id); out.push('✓ ' + esc(bl ? bl.vendor + ' · ' + kr(bl.amount) : p.bill_payment.bill_id) + ' · ' + P('paid', 'betalt')); }
+  if (!out.length) out.push(S.files.length ? P('Saved for a person to look at', 'Lagret slik at noen kan se på det') : P('Note saved', 'Notat lagret'));
+  return out;
+}
+function done(res) {
+  const lines = summary(S.proposal || {});
+  S.files = []; S.thumbs = []; S.proposal = null; S.sid = '';
+  show('done', '<div class="ok">✓</div><h1 class="center">' + L('Saved. Thank you!', 'Lagret. Takk!') + '</h1>' +
+    '<div class="card">' + lines.map((s) => '<div class="row"><div class="v" style="text-align:left">' + s + '</div></div>').join('') +
+    ((res.ids || []).length ? '<p class="l2" style="font-size:15px;margin:8px 0 0">' + esc(P('In the sheet as', 'I arket som')) + ' ' + esc(res.ids.join(', ')) + '</p>' : '') + '</div>' +
+    '<button class="btn big" data-act="home"><span class="ico">⌂</span><span>' + L('Back to start', 'Til start') + '</span></button>');
+}
+
+// ---------- taps
+app.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act;
+  if (a === 'home') { voiceEnd(); if (rec) { try { rec.onstop = null; rec.stop(); } catch (x) {} rec = null; } S.files = []; S.thumbs = []; return home(); }
+  if (a === 'iam') { S.person = el.dataset.name; store.set('person', S.person); return afterLists(); }
+  if (a === 'notme') { S.person = ''; store.set('person', ''); syncUrl(); return who(); }
+  if (a === 'reload') { spinner(L('Updating…', 'Oppdaterer…')); return refresh(true); }
+  if (a === 'receipt') return startPhoto('receipt', 'cam');
+  if (a === 'pickphoto') return startPhoto('receipt', 'pick');
+  if (a === 'jobdone') return jobPick();
+  if (a === 'job') { S.jobNo = Number(el.dataset.no); S.proposal = { job: { action: 'done', job_no: S.jobNo, note: '' } }; S.original = JSON.stringify(S.proposal); S.manual = false; S.edit = false; return confirm(); }
+  if (a === 'jphoto') { collect(); $('cam2').value = ''; return $('cam2').click(); }
+  if (a === 'problem') { S.text = ''; return problem(false); }
+  if (a === 'pphoto') { S.text = $('ptext') ? $('ptext').value : ''; $('cam2').value = ''; return $('cam2').click(); }
+  if (a === 'psend' || a === 'tsend') {
+    S.text = ($('ptext') ? $('ptext').value : '').trim();
+    if (!S.text && !S.files.length) { $('ptext') && $('ptext').focus(); return; }
+    return read();
+  }
+  if (a === 'voice') return voice();
+  if (a === 'vstop') return voiceStop(true);
+  if (a === 'vcancel') return voiceStop(false);
+  if (a === 'visit') return visit();
+  if (a === 'stay') return stay();
+  if (a === 'stays') return stays();
+  if (a === 'scancel') { S.kind = 'stay'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = false;
+    S.proposal = { stay_cancel: { id: el.dataset.id } }; S.original = JSON.stringify(S.proposal); return confirm(); }
+  if (a === 'jobs') return jobs();
+  if (a === 'bills') return bills();
+  if (a === 'owes') return owes();
+  if (a === 'paid') { S.kind = 'bill_paid'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = false;
+    S.proposal = { bill_payment: { bill_id: el.dataset.id } }; S.original = JSON.stringify(S.proposal); return confirm(); }
+  if (a === 'fix') { collect(); S.edit = true; return confirm(); }
+  if (a === 'save') return save();
+  if (a === 'retry') return S.retry && S.retry();
+  if (a === 'alt') return S.alt && S.alt();
+});
+app.addEventListener('change', (e) => {
+  if (e.target.id !== 'f_sfrom' && e.target.id !== 'f_sto') return;
+  const a = $('f_sfrom').value, b = $('f_sto');
+  if (e.target.id === 'f_sfrom' && a && (!b.value || b.value < a)) b.value = a;   // last day follows the first
+  clash();
+});
+$('cam').addEventListener('change', (e) => gotPhoto(e.target));
+$('pick').addEventListener('change', (e) => gotPhoto(e.target));
+$('cam2').addEventListener('change', (e) => { if (S.kind === 'job_done' && S.screen === 'confirm') { gotPhoto(e.target); } else { S.kind = 'problem'; gotPhoto(e.target); } });
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+window.__bratteng = S;   // for testing in the browser
+boot();
+</script>
+</body>
+</html>

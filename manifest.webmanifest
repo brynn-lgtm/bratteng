@@ -1,0 +1,13 @@
+{
+  "name": "Bratteng",
+  "short_name": "Bratteng",
+  "description": "Receipts, jobs and visits for the family house · Kvitteringer, jobber og besøk",
+  "display": "standalone",
+  "background_color": "#F6F4EF",
+  "theme_color": "#1F3A5F",
+  "lang": "no",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
