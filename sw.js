@@ -1,6 +1,6 @@
 // Network first, so the family always gets the newest page; the saved copy is only used when there is no
 // connection (or it takes over 4 s), so the app still opens at the house. Calls to the Genie are never cached.
-const C = 'bratteng-v03', SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'apple-touch-icon.png'];
+const C = 'bratteng-v04', SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'apple-touch-icon.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(C).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== C).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', (e) => {
