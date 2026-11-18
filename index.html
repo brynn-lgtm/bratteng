@@ -86,6 +86,13 @@ input[type=date]{min-width:0;max-width:100%;-webkit-appearance:none;appearance:n
 @keyframes pulse{50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(158,43,37,.15)}}
 .ok{font-size:72px;text-align:center;margin:28px 0 0;color:var(--moss)}
 .pos{color:var(--moss)}.neg{color:var(--falu)}
+.tabs{display:flex;gap:8px;margin:6px 0 4px}.tab{flex:1;min-height:56px;border-radius:14px;border:2px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:18px}
+.tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.mhead{display:flex;justify-content:space-between;align-items:center;font-size:20px;margin-bottom:8px}.mhead .link{font-size:32px;padding:0 14px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cal .wd{text-align:center;color:var(--muted);font-size:14px}
+.day{min-height:52px;border-radius:8px;padding:3px;font-size:15px;background:var(--birch,#eee);overflow:hidden}
+.day span{display:block;font-size:11px;line-height:1.15;word-break:break-word}.day.booked{background:var(--moss);color:#fff}.day.now{outline:3px solid var(--falu)}
+.view[disabled]{opacity:1}
 .foot{color:var(--muted);font-size:15px;margin-top:26px;text-align:center}
 .hide{display:none}
 @media (prefers-reduced-motion:reduce){.spin,.rec{animation:none}}
@@ -102,7 +109,7 @@ input[type=date]{min-width:0;max-width:100%;-webkit-appearance:none;appearance:n
 // Bratteng phone app. Talks to the Genie (Google Apps Script web app) at BRATTENG_API (config.js).
 // No names, emails or keys live in this file: they come from the Genie after the family code is checked.
 const API = window.BRATTENG_API || '';
-const VERSION = '2026-11-18 v03';
+const VERSION = '2026-11-18 v04';
 const S = { code: '', person: '', lang: 'en', lists: null, listsAt: 0, kind: '', files: [], thumbs: [], text: '',
   proposal: null, original: '', manual: false, reason: '', edit: false, sid: '', err: '', back: 'home', jobNo: null };
 const $ = (id) => document.getElementById(id);
@@ -168,7 +175,7 @@ async function refresh(blocking) {
   if (res.ok) {
     S.lists = res; S.listsAt = Date.now();
     store.set('lists', JSON.stringify({ code: S.code, at: S.listsAt, lists: res }));
-    if (blocking || ['home', 'jobs', 'bills', 'owes', 'stays', 'who'].includes(S.screen)) afterLists(blocking);
+    if (blocking || ['home', 'jobs', 'bills', 'owes', 'stays', 'overview', 'who'].includes(S.screen)) afterLists(blocking);
     return true;
   }
   if (res.error === 'bad_code' || res.error === 'not_set_up') { store.set('lists', ''); return badLink(res.error); }
@@ -180,7 +187,7 @@ function afterLists(force) {
   if (!me) { if (S.person) S.err = 'unknown'; S.person = ''; store.set('person', ''); return who(); }
   S.lang = me.lang === 'no' ? 'no' : 'en';
   syncUrl();
-  if (force || !S.screen || ['who', 'home', 'jobs', 'bills', 'owes', 'stays'].includes(S.screen)) (S.screen === 'jobs' ? jobs : S.screen === 'bills' ? bills : S.screen === 'owes' ? owes : S.screen === 'stays' ? stays : home)();
+  if (force || !S.screen || ['who', 'home', 'jobs', 'bills', 'owes', 'stays', 'overview'].includes(S.screen)) (S.screen === 'jobs' ? jobs : S.screen === 'bills' ? bills : S.screen === 'owes' ? owes : S.screen === 'stays' ? stays : S.screen === 'overview' ? overview : home)();
 }
 function show(screen, html) { S.screen = screen; app.innerHTML = html; window.scrollTo(0, 0); }
 
@@ -224,8 +231,9 @@ function home() {
     '<button class="btn" data-act="visit"><span class="ico">🏠</span><span>' + L('We’re at the house', 'Vi er på huset') + '</span></button>' +
     '</div>' + (L0.stays_on ? '<button class="btn" style="margin-top:12px" data-act="stay"><span class="ico">📅</span><span>' + L('Book a stay', 'Bestill opphold') + '</span></button>' : '') +
     '<div class="views">' +
+    '<button class="view" data-act="overview"><span>' + L('Overview', 'Oversikt') + '</span><span class="n">🏠</span></button>' +
     (L0.stays_on ? '<button class="view" data-act="stays"><span>' + L('Who’s at the house when', 'Hvem er på huset når') + '</span><span class="n">' + stayList().length + '</span></button>' : '') +
-    '<button class="view" data-act="jobs"><span>' + L('Open jobs', 'Åpne jobber') + '</span><span class="n">' + jobsN + '</span></button>' +
+    '<button class="view" data-act="jobs"><span>' + L('Jobs: open and done', 'Jobber: åpne og ferdige') + '</span><span class="n">' + jobsN + '</span></button>' +
     '<button class="view" data-act="bills"><span>' + L('Bills to pay', 'Regninger å betale') + '</span><span class="n">' + billsN + '</span></button>' +
     '<button class="view" data-act="owes"><span>' + L('Who owes whom', 'Hvem skylder hvem') + '</span><span class="n">kr</span></button>' +
     '</div><p class="foot">' + (ago > 1 ? P('Updated ' + ago + ' min ago', 'Oppdatert for ' + ago + ' min siden') + ' · ' : '') +
@@ -234,12 +242,53 @@ function home() {
 function listTop(title) {
   return '<div class="top"><button class="link" data-act="home">← ' + P('Back', 'Tilbake') + '</button></div><h1>' + title + '</h1>';
 }
+const doneList = () => (S.lists && S.lists.done_jobs) || [];
+function jobTabs(cur) {
+  const b = (k, en, no, n) => '<button class="tab' + (cur === k ? ' on' : '') + '" data-act="jobtab" data-tab="' + k + '">' + P(en, no) + ' (' + n + ')</button>';
+  return '<div class="tabs">' + b('open', 'Open', 'Åpne', S.lists.jobs.length) + b('done', 'Done', 'Ferdige', doneList().length) + '</div>';
+}
 function jobs() {
+  const tab = S.jobTab || 'open';
+  if (tab === 'done') {
+    const D = doneList();
+    return show('jobs', listTop(L('Jobs', 'Jobber')) + jobTabs('done') + '<div class="list">' + (D.length ? D.map((j) =>
+      '<div class="item"><div class="t">✅ ' + jw(j.no) + ': ' + esc(j.problem) + '</div>' +
+      '<div class="m">' + esc(half(j.area, S.lang === 'no' ? 1 : 0) || j.area) + (j.where ? ' · ' + esc(j.where) : '') + '</div>' +
+      '<div style="font-size:19px;margin-top:4px">' + (j.year ? esc(j.year) : P('Year not known', 'År ukjent')) + (j.by ? ' · ' + esc(j.by) : '') +
+      (j.spent ? ' · ' + kr(j.spent, true) : '') + (/temporary|midlertidig/i.test(j.status) ? ' · <span class="neg">' + P('temporary fix', 'midlertidig') + '</span>' : '') + '</div>' +
+      (j.fix ? '<div class="m">' + esc(j.fix) + '</div>' : '') + '</div>').join('')
+      : '<p>' + L('No finished jobs yet.', 'Ingen ferdige jobber ennå.') + '</p>') + '</div>');
+  }
   const J = S.lists.jobs.slice().sort((a, b) => S.lists.priorities.indexOf(a.priority) - S.lists.priorities.indexOf(b.priority) || a.no - b.no);
-  show('jobs', listTop(L('Open jobs', 'Åpne jobber')) + '<div class="list">' + (J.length ? J.map((j) =>
+  show('jobs', listTop(L('Jobs', 'Jobber')) + jobTabs('open') + '<div class="list">' + (J.length ? J.map((j) =>
     '<div class="item"><div class="t">' + esc(half(j.priority, 0).slice(0, 2)) + ' ' + jw(j.no) + ': ' + esc(j.problem) + '</div>' +
     '<div class="m">' + esc(j.area) + (j.where ? ' · ' + esc(j.where) : '') + ' · ' + esc(j.priority.replace(/^\S+\s/, '')) + '</div></div>').join('')
     : '<p>' + L('No open jobs.', 'Ingen åpne jobber.') + '</p>') + '</div>');
+}
+// the whole house at a glance: jobs, money, bills, stays, matters, last visits
+function overview() {
+  const L0 = S.lists, sm = L0.summary || {}, t = today(), D = doneList();
+  const pr = (i) => L0.jobs.filter((j) => j.priority === L0.priorities[i]).length;
+  const next = stayList().find((s) => s.to >= t);
+  const V = (L0.visits || []).slice(0, 5);
+  const row = (a, b, act) => '<button class="view" ' + (act ? 'data-act="' + act + '"' : 'disabled') + '><span>' + a + '</span><span class="n">' + b + '</span></button>';
+  show('overview', listTop(L('Overview', 'Oversikt')) +
+    '<div class="card"><div class="t" style="font-weight:700">' + L('Jobs', 'Jobber') + '</div>' +
+      '<div style="font-size:19px">🔴 ' + pr(0) + ' · 🟠 ' + pr(1) + ' · 🟢 ' + pr(2) + ' ' + P('open', 'åpne') + ' · ✅ ' + D.length + ' ' + P('done', 'ferdige') + '</div>' +
+      (sm.jobs_spent ? '<div class="m">' + P('Spent on jobs so far', 'Brukt på jobber hittil') + ': ' + kr(sm.jobs_spent, true) + '</div>' : '') + '</div>' +
+    '<div class="card"><div class="t" style="font-weight:700">' + L('Shared costs', 'Felles kostnader') + '</div>' +
+      '<div style="font-size:19px">' + esc(sm.year || '') + ': ' + kr(sm.shared_year, true) + '</div>' +
+      '<div class="m">' + P('All recorded', 'Alt registrert') + ': ' + kr(sm.shared_all, true) + '</div></div>' +
+    '<div class="views">' +
+      row(L('Jobs: open and done', 'Jobber: åpne og ferdige'), L0.jobs.length + ' / ' + D.length, 'jobs') +
+      row(L('Bills to pay', 'Regninger å betale'), L0.bills.length, 'bills') +
+      row(L('Who owes whom', 'Hvem skylder hvem'), 'kr', 'owes') +
+      (L0.stays_on ? row(L('Next stay', 'Neste opphold'), next ? esc(ddmm(next.from).slice(0, 5)) : '–', 'stays') : '') +
+      row(L('Open matters (permits, letters)', 'Åpne saker (søknader, brev)'), sm.matters_open || 0, '') +
+    '</div>' +
+    (V.length ? '<h2 style="margin-top:18px">' + L('Recent visits', 'Siste besøk') + '</h2><div class="list">' + V.map((v) =>
+      '<div class="item"><div class="t">' + esc(v.year) + (v.dates ? ' · ' + esc(v.dates) : '') + '</div>' +
+      (v.who ? '<div style="font-size:19px">' + esc(v.who) + '</div>' : '') + (v.what ? '<div class="m">' + esc(v.what) + '</div>' : '') + '</div>').join('') + '</div>' : ''));
 }
 function bills() {
   const B = S.lists.bills, t = today();
@@ -264,7 +313,7 @@ function owes() {
 
 function stays() {
   const A = stayList(), t = today();
-  show('stays', listTop(L('Who’s at the house when', 'Hvem er på huset når')) +
+  show('stays', listTop(L('Who’s at the house when', 'Hvem er på huset når')) + month(A) +
     '<button class="btn" data-act="stay"><span class="ico">📅</span><span>' + L('Book a stay', 'Bestill opphold') + '</span></button><div class="list">' +
     (A.length ? A.map((s) => '<div class="item"><div class="t">' + esc(rng(s.from, s.to)) + '</div>' +
       '<div style="font-size:21px">' + esc(s.who) + (s.from <= t ? ' · <span class="pos">' + P('there now', 'der nå') + '</span>' : '') + '</div>' +
@@ -272,6 +321,24 @@ function stays() {
       (s.by === S.person ? '<button class="btn light" style="margin:10px 0 0;min-height:60px;font-size:19px" data-act="scancel" data-id="' + esc(s.id) + '"><span class="ico" style="font-size:24px">✕</span><span>' + L('Cancel this stay', 'Avlys dette oppholdet') + '</span></button>' : '') +
       '</div>').join('')
       : '<p>' + L('Nobody has booked a stay yet.', 'Ingen har bestilt opphold ennå.') + '</p>') + '</div>');
+}
+// month grid: booked days coloured, first names under the day number; arrows move a month
+function month(A) {
+  const base = new Date(), off = S.monthOff || 0;
+  const y = new Date(base.getFullYear(), base.getMonth() + off, 1), Y = y.getFullYear(), M = y.getMonth();
+  const days = new Date(Y, M + 1, 0).getDate(), lead = (y.getDay() + 6) % 7, t = today();
+  const iso = (d) => Y + '-' + String(M + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  const MN = S.lang === 'no' ? ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember']
+    : ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const WD = S.lang === 'no' ? ['ma','ti','on','to','fr','lø','sø'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  let cells = WD.map((w) => '<div class="wd">' + w + '</div>').join('') + '<div></div>'.repeat(lead);
+  for (let d = 1; d <= days; d++) {
+    const k = iso(d), who = A.filter((s) => s.from <= k && s.to >= k).map((s) => String(s.who).split(/[ ,&]/)[0]);
+    cells += '<div class="day' + (who.length ? ' booked' : '') + (k === t ? ' now' : '') + '"><b>' + d + '</b>' +
+      (who.length ? '<span>' + esc(who.slice(0, 2).join(', ') + (who.length > 2 ? ' +' + (who.length - 2) : '')) + '</span>' : '') + '</div>';
+  }
+  return '<div class="card"><div class="mhead"><button class="link" data-act="mprev" aria-label="previous month">‹</button><b>' + MN[M] + ' ' + Y +
+    '</b><button class="link" data-act="mnext" aria-label="next month">›</button></div><div class="cal">' + cells + '</div></div>';
 }
 function stay() {
   S.kind = 'stay'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = true;
@@ -635,7 +702,10 @@ app.addEventListener('click', (e) => {
   if (a === 'stays') return stays();
   if (a === 'scancel') { S.kind = 'stay'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = false;
     S.proposal = { stay_cancel: { id: el.dataset.id } }; S.original = JSON.stringify(S.proposal); return confirm(); }
-  if (a === 'jobs') return jobs();
+  if (a === 'jobs') { S.jobTab = 'open'; return jobs(); }
+  if (a === 'jobtab') { S.jobTab = el.dataset.tab; return jobs(); }
+  if (a === 'overview') return overview();
+  if (a === 'mprev' || a === 'mnext') { S.monthOff = (S.monthOff || 0) + (a === 'mnext' ? 1 : -1); return stays(); }
   if (a === 'bills') return bills();
   if (a === 'owes') return owes();
   if (a === 'paid') { S.kind = 'bill_paid'; S.files = []; S.thumbs = []; S.sid = ''; S.manual = false; S.edit = false;
